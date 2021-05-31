@@ -31,7 +31,7 @@ endif()
 
 # prevenet overriding project when included as a submodule
 #project ( FluidSynth C CXX )
-set ( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_admin )
+set ( CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake_admin )
 
 # FluidSynth package name
 set ( PACKAGE "fluidsynth" )
@@ -80,7 +80,7 @@ option ( enable-libsndfile "compile libsndfile support (if it is available)" on 
 option ( enable-midishare "compile MidiShare support (if it is available)" on )
 option ( enable-opensles "compile OpenSLES support (if it is available)" off )
 option ( enable-oboe "compile Oboe support (requires OpenSLES and/or AAudio)" off )
-option ( enable-network "enable network support (requires BSD sockets)" on )
+option ( enable-network "enable network support (requires BSD sockets)" off )
 option ( enable-oss "compile OSS support (if it is available)" on )
 option ( enable-dsound "compile DirectSound support (if it is available)" on )
 option ( enable-wasapi "compile Windows WASAPI support (if it is available)" on )
@@ -93,6 +93,20 @@ option ( enable-readline "compile readline lib line editing (if it is available)
 option ( enable-threads "enable multi-threading support (such as parallel voice synthesis)" on )
 option ( enable-glib "enable use of glib (only disable if you are providing your own glib alternative)" off )
 option ( enable-tests "enable test projects" off )
+
+set(CompilerFlags
+        CMAKE_CXX_FLAGS
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_C_FLAGS
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELEASE
+        )
+foreach(CompilerFlag ${CompilerFlags})
+  string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+  string(REPLACE "/W3" "" ${CompilerFlag} "${${CompilerFlag}}")
+endforeach()
+
 
 # Platform specific options
 if ( CMAKE_SYSTEM MATCHES "Linux|FreeBSD|DragonFly" )
@@ -469,13 +483,13 @@ endif ( CMAKE_BUILD_TYPE MATCHES "Debug" )
 file(GLOB_RECURSE
      ALL_SOURCE_FILES
      LIST_DIRECTORIES false
-     ${CMAKE_SOURCE_DIR}/*.[chi]
-     ${CMAKE_SOURCE_DIR}/*.[chi]pp
-     ${CMAKE_SOURCE_DIR}/*.[chi]xx
-     ${CMAKE_SOURCE_DIR}/*.cc
-     ${CMAKE_SOURCE_DIR}/*.hh
-     ${CMAKE_SOURCE_DIR}/*.ii
-     ${CMAKE_SOURCE_DIR}/*.[CHI]
+     ${CMAKE_CURRENT_LIST_DIR}/*.[chi]
+     ${CMAKE_CURRENT_LIST_DIR}/*.[chi]pp
+     ${CMAKE_CURRENT_LIST_DIR}/*.[chi]xx
+     ${CMAKE_CURRENT_LIST_DIR}/*.cc
+     ${CMAKE_CURRENT_LIST_DIR}/*.hh
+     ${CMAKE_CURRENT_LIST_DIR}/*.ii
+     ${CMAKE_CURRENT_LIST_DIR}/*.[CHI]
      )
 
 find_program ( ASTYLE "astyle" )
@@ -724,11 +738,11 @@ if ( OpenMP_FOUND OR OpenMP_C_FOUND )
 endif()
 
 # manipulate some variables to setup a proper test env
-set(TEST_SOUNDFONT "${CMAKE_SOURCE_DIR}/sf2/VintageDreamsWaves-v2.sf2")
-set(TEST_SOUNDFONT_UTF8_1 "${CMAKE_SOURCE_DIR}/sf2/\\xE2\\x96\\xA0VintageDreamsWaves-v2\\xE2\\x96\\xA0.sf2")
-set(TEST_SOUNDFONT_UTF8_2 "${CMAKE_SOURCE_DIR}/sf2/VìntàgèDrèàmsWàvès-v2.sf2")
-set(TEST_SOUNDFONT_SF3 "${CMAKE_SOURCE_DIR}/sf2/VintageDreamsWaves-v2.sf3")
-set(TEST_MIDI_UTF8 "${CMAKE_SOURCE_DIR}/test/èmpty.mid")
+set(TEST_SOUNDFONT "${CMAKE_CURRENT_LIST_DIR}/sf2/VintageDreamsWaves-v2.sf2")
+set(TEST_SOUNDFONT_UTF8_1 "${CMAKE_CURRENT_LIST_DIR}/sf2/\\xE2\\x96\\xA0VintageDreamsWaves-v2\\xE2\\x96\\xA0.sf2")
+set(TEST_SOUNDFONT_UTF8_2 "${CMAKE_CURRENT_LIST_DIR}/sf2/VìntàgèDrèàmsWàvès-v2.sf2")
+set(TEST_SOUNDFONT_SF3 "${CMAKE_CURRENT_LIST_DIR}/sf2/VintageDreamsWaves-v2.sf3")
+set(TEST_MIDI_UTF8 "${CMAKE_CURRENT_LIST_DIR}/test/èmpty.mid")
 
 # Make sure to link against libm before checking for math functions below
 set ( CMAKE_REQUIRED_LIBRARIES "${LIBFLUID_LIBS};${WINDOWS_LIBS}" )
@@ -786,7 +800,7 @@ endif ( enable-ipv6 )
 
 
 # General configuration file
-configure_file ( ${CMAKE_SOURCE_DIR}/src/config.cmake
+configure_file ( ${CMAKE_CURRENT_LIST_DIR}/src/config.cmake
                  ${CMAKE_BINARY_DIR}/config.h )
 
 # Setup linker directories NOW, as the command will apply only to targets created after it has been called.
@@ -850,7 +864,7 @@ if ( UNIX )
     endif ( DEFINED FLUID_DAEMON_ENV_FILE )
 
     # uninstall custom target
-    configure_file ( "${CMAKE_SOURCE_DIR}/cmake_admin/cmake_uninstall.cmake.in"
+    configure_file ( "${CMAKE_CURRENT_LIST_DIR}/cmake_admin/cmake_uninstall.cmake.in"
       "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
     add_custom_target ( uninstall
       "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
@@ -871,7 +885,7 @@ if ( UNIX )
         COMMAND tar -cz --exclude .svn -f ${PACKAGE}-${VERSION}.tar.gz ${PACKAGE}-${VERSION}
         COMMAND zip -qr ${PACKAGE}-${VERSION}.zip ${PACKAGE}-${VERSION} -x '*.svn*'
         COMMAND rm -rf ${PACKAGE}-${VERSION}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     )
 
 endif ( UNIX )
@@ -881,8 +895,8 @@ include ( report )
 # CPack support
 set ( CPACK_PACKAGE_DESCRIPTION_SUMMARY "FluidSynth real-time synthesizer" )
 set ( CPACK_PACKAGE_VENDOR "fluidsynth.org" )
-set ( CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md" )
-set ( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE" )
+set ( CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_LIST_DIR}/README.md" )
+set ( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_LIST_DIR}/LICENSE" )
 set ( CPACK_PACKAGE_VERSION_MAJOR ${FLUIDSYNTH_VERSION_MAJOR} )
 set ( CPACK_PACKAGE_VERSION_MINOR ${FLUIDSYNTH_VERSION_MINOR} )
 set ( CPACK_PACKAGE_VERSION_PATCH ${FLUIDSYNTH_VERSION_MICRO} )

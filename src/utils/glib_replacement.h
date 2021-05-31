@@ -95,12 +95,12 @@ typedef DWORD fluid_private_t;
 
 
 #define fluid_atomic_int_inc(atomic) InterlockedIncrement((atomic))
-#define fluid_atomic_int_get(atomic) (*(LONG*)(atomic))
+#define fluid_atomic_int_get(atomic) (*atomic)
 #define fluid_atomic_int_set(atomic, val) InterlockedExchange((atomic), (val))
 #define fluid_atomic_int_dec_and_test(_pi) InterlockedDecrement(_pi)
 
 // TODO: Swapped ??
-#define fluid_atomic_int_compare_and_exchange(_pi, _old, _new) InterlockedCompareExchange(_pi, _new, _old)
+#define fluid_atomic_int_compare_and_exchange(_pi, _old, _new) InterlockedCompareExchange(_pi, _old, _new)
 #define fluid_atomic_int_add(_pi, _add) InterlockedAdd(_pi, _add)
 
 typedef DWORD fluid_thread_return_t;
@@ -141,7 +141,7 @@ fluid_utime(void)
     return time / 1000000.0;
 }
 
-#define fluid_atomic_int_exchange_and_add(_pi, _add) (*_pi) += _add
+#define fluid_atomic_int_exchange_and_add(_pi, _add) InterlockedAdd(_pi, _add)
 
 // TODO
 inline int
