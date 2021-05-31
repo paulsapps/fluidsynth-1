@@ -1137,7 +1137,7 @@ fluid_thread_join(fluid_thread_t *thread)
 #endif
 
 
-static fluid_thread_return_t
+static fluid_thread_return_t fluid_thread_calling_convention
 fluid_timer_run(void *data)
 {
     fluid_timer_t *timer;
@@ -1541,7 +1541,7 @@ void fluid_socket_close(fluid_socket_t sock)
     }
 }
 
-static fluid_thread_return_t fluid_server_socket_run(void *data)
+static fluid_thread_return_t fluid_thread_calling_convention fluid_server_socket_run(void *data)
 {
     fluid_server_socket_t *server_socket = (fluid_server_socket_t *)data;
     fluid_socket_t client_socket;
@@ -1809,3 +1809,62 @@ char* fluid_get_windows_error(void)
 #endif
 }
 #endif
+
+static DWORD fluid_thread_calling_convention
+fluid_thread_high_prio(void *data)
+{
+    fluid_thread_info_t *info = data;
+
+    fluid_thread_self_set_prio(info->prio_level);
+
+    info->func(info->data);
+    FLUID_FREE(info);
+
+    return 0;
+}
+
+inline fluid_thread_t *
+new_fluid_thread(const char *name, fluid_thread_func_t func, void *data, int prio_level, int detach)
+{
+    fluid_thread_t *thread;
+    fluid_thread_info_t *info;
+
+    fluid_return_val_if_fail(func != NULL, NULL);
+
+    thread = FLUID_NEW(fluid_thread_t);
+    if (prio_level > 0) {
+        info = FLUID_NEW(fluid_thread_info_t);
+
+        if (!info) {
+            FLUID_LOG(FLUID_ERR, "Out of memory");
+            return NULL;
+        }
+
+        info->func = func;
+        info->data = data;
+        info->prio_level = prio_level;
+        data = info;
+        func = fluid_thread_high_prio;
+    }
+
+#if _WIN32
+    *thread = CreateThread(NULL, 0, func, data, 0, NULL);
+#else
+    pthread_create(thread, NULL, func, data);
+#endif
+
+    if (!thread) {
+        FLUID_LOG(FLUID_ERR, "Failed to create the thread");
+        return NULL;
+    }
+
+    if (detach) {
+#if _WIN32
+        CloseHandle(*thread);
+#else
+        pthread_detach(*thread);
+#endif
+    }
+
+    return thread;
+}

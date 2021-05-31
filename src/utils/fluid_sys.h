@@ -443,9 +443,11 @@ fluid_atomic_float_get(fluid_atomic_float_t *fptr)
     return fval;
 }
 
-
 /* Threads */
 #ifdef GLIB_SUPPORT
+
+#define fluid_thread_calling_convention
+
 /* other thread implementations might change this for their needs */
 typedef void *fluid_thread_return_t;
 /* static return value for thread functions which requires a return value */

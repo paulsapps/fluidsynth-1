@@ -58,7 +58,7 @@ struct _fluid_shell_t
 };
 
 
-static fluid_thread_return_t fluid_shell_run(void *data);
+static fluid_thread_return_t fluid_thread_calling_convention fluid_shell_run(void *data);
 static void fluid_shell_init(fluid_shell_t *shell,
                              fluid_settings_t *settings, fluid_cmd_handler_t *handler,
                              fluid_istream_t in, fluid_ostream_t out);
@@ -527,7 +527,7 @@ delete_fluid_shell(fluid_shell_t *shell)
     FLUID_FREE(shell);
 }
 
-static fluid_thread_return_t
+static fluid_thread_return_t fluid_thread_calling_convention
 fluid_shell_run(void *data)
 {
     fluid_shell_t *shell = (fluid_shell_t *)data;
@@ -4798,7 +4798,7 @@ struct _fluid_client_t
 };
 
 
-static fluid_thread_return_t fluid_client_run(void *data)
+static fluid_thread_return_t fluid_thread_calling_convention fluid_client_run(void *data)
 {
     fluid_shell_t shell;
     fluid_client_t *client = (fluid_client_t *)data;
