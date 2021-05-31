@@ -29,7 +29,8 @@ if(POLICY CMP0091)
   cmake_policy(SET CMP0091 NEW)
 endif()
 
-project ( FluidSynth C CXX )
+# prevenet overriding project when included as a submodule
+#project ( FluidSynth C CXX )
 set ( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_admin )
 
 # FluidSynth package name
@@ -86,11 +87,12 @@ option ( enable-wasapi "compile Windows WASAPI support (if it is available)" on 
 option ( enable-waveout "compile Windows WaveOut support (if it is available)" on )
 option ( enable-winmidi "compile Windows MIDI support (if it is available)" on )
 option ( enable-sdl2 "compile SDL2 audio support (if it is available)" on )
-option ( enable-pkgconfig "use pkg-config to locate fluidsynth's (mostly optional) dependencies" on )
+option ( enable-pkgconfig "use pkg-config to locate fluidsynth's (mostly optional) dependencies" off )
 option ( enable-pulseaudio "compile PulseAudio support (if it is available)" on )
 option ( enable-readline "compile readline lib line editing (if it is available)" on )
 option ( enable-threads "enable multi-threading support (such as parallel voice synthesis)" on )
-option ( enable-glib "enable use of glib (only disable if you are providing your own glib alternative)" on )
+option ( enable-glib "enable use of glib (only disable if you are providing your own glib alternative)" off )
+option ( enable-tests "enable test projects" off )
 
 # Platform specific options
 if ( CMAKE_SYSTEM MATCHES "Linux|FreeBSD|DragonFly" )
@@ -803,12 +805,16 @@ link_directories (
 )
 
 # required to allow ctest to be called from top-level build directory
-ENABLE_TESTING()
+if (enable-tests)
+    ENABLE_TESTING()
+endif(enable-tests)
 
 # Process subdirectories
 add_subdirectory ( src )
-add_subdirectory ( test )
-add_subdirectory ( doc )
+if (enable-tests)
+    add_subdirectory ( test )
+    add_subdirectory ( doc )
+endif(enable-tests)
 
 # pkg-config support
 set ( prefix "${CMAKE_INSTALL_PREFIX}" )
